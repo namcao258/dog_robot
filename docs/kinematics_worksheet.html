@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài Tập Thực Hành: Động Học Chân Robot Dog</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 20mm;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 11pt;
+            line-height: 1.6;
+            color: #000;
+            background: #fff;
+            max-width: 210mm;
+            margin: 0 auto;
+            padding: 20mm;
+        }
+
+        h1 {
+            font-size: 24pt;
+            font-weight: bold;
+            text-align: center;
+            margin: 20pt 0;
+            color: #1a1a1a;
+            border-bottom: 3pt solid #333;
+            padding-bottom: 10pt;
+        }
+
+        h2 {
+            font-size: 16pt;
+            font-weight: bold;
+            margin: 18pt 0 10pt 0;
+            color: #2c3e50;
+            border-bottom: 2pt solid #666;
+            padding-bottom: 5pt;
+            page-break-after: avoid;
+        }
+
+        h3 {
+            font-size: 13pt;
+            font-weight: bold;
+            margin: 14pt 0 8pt 0;
+            color: #34495e;
+            page-break-after: avoid;
+        }
+
+        h4 {
+            font-size: 11pt;
+            font-weight: bold;
+            margin: 10pt 0 6pt 0;
+            page-break-after: avoid;
+        }
+
+        p {
+            margin: 6pt 0;
+            text-align: justify;
+        }
+
+        strong {
+            font-weight: bold;
+        }
+
+        ul, ol {
+            margin: 8pt 0 8pt 20pt;
+        }
+
+        li {
+            margin: 4pt 0;
+        }
+
+        pre, code {
+            font-family: 'Courier New', monospace;
+            font-size: 9pt;
+            background: #f5f5f5;
+            border: 1pt solid #ddd;
+            padding: 8pt;
+            margin: 8pt 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            page-break-inside: avoid;
+        }
+
+        code {
+            padding: 2pt 4pt;
+            display: inline;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10pt 0;
+            font-size: 10pt;
+            page-break-inside: avoid;
+        }
+
+        th, td {
+            border: 1pt solid #333;
+            padding: 6pt;
+            text-align: center;
+        }
+
+        th {
+            background: #e0e0e0;
+            font-weight: bold;
+        }
+
+        tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+
+        .page-break {
+            page-break-before: always;
+        }
+
+        .no-break {
+            page-break-inside: avoid;
+        }
+
+        .info-box {
+            background: #fff3cd;
+            border-left: 4pt solid #ffc107;
+            padding: 10pt;
+            margin: 10pt 0;
+            page-break-inside: avoid;
+        }
+
+        .formula-box {
+            background: #e3f2fd;
+            border: 1pt solid #2196F3;
+            padding: 12pt;
+            margin: 10pt 0;
+            text-align: center;
+            font-size: 12pt;
+            page-break-inside: avoid;
+        }
+
+        .step-box {
+            background: #f5f5f5;
+            border-left: 4pt solid #4CAF50;
+            padding: 10pt;
+            margin: 10pt 0;
+            page-break-inside: avoid;
+        }
+
+        .answer-space {
+            border-bottom: 1pt dotted #999;
+            min-height: 30pt;
+            margin: 10pt 0;
+        }
+
+        .header-meta {
+            text-align: center;
+            font-size: 11pt;
+            margin: 10pt 0 20pt 0;
+            color: #666;
+        }
+
+        .section-number {
+            color: #2196F3;
+            font-weight: bold;
+        }
+
+        hr {
+            border: none;
+            border-top: 1pt solid #ddd;
+            margin: 15pt 0;
+        }
+
+        @media print {
+            body {
+                padding: 0;
+                background: white;
+            }
+
+            .no-print {
+                display: none;
+            }
+
+            a {
+                color: #000;
+                text-decoration: none;
+            }
+        }
+
+        .checklist {
+            list-style-type: none;
+        }
+
+        .checklist li:before {
+            content: "☐ ";
+            font-size: 14pt;
+            margin-right: 5pt;
+        }
+    </style>
+</head>
+<body>
+    <h1>BÀI TẬP THỰC HÀNH:<br>ĐỘNG HỌC CHÂN ROBOT DOG</h1>
+
+    <div class="header-meta">
+        <p><strong>Mục tiêu:</strong> Tính toán Forward Kinematics (FK) và Inverse Kinematics (IK)<br>
+        cho một chân robot dog 3-DOF</p>
+        <p><strong>Công cụ cần thiết:</strong> Giấy A4 trắng • Bút chì, thước kẻ • Máy tính • Kiến thức lượng giác cơ bản</p>
+    </div>
+
+    <hr>
+
+    <!-- PHẦN 1 -->
+    <h2><span class="section-number">PHẦN 1:</span> THIẾT LẬP BÀI TOÁN</h2>
+
+    <h3>1.1. Cấu Trúc Chân Robot</h3>
+
+    <p>Vẽ sơ đồ chân robot với các thông số:</p>
+
+    <pre>Body (Root Joint)
+  │
+  ├─── W (Basal segment) ───┐
+  │                         [Hip Joint - θ1]
+  │                              │
+  │                         L1 (Thigh)
+  │                              │
+  │                         [Knee Joint - θ2]
+  │                              │
+  │                         L2 (Calf)
+  │                              │
+  │                         [Ankle Joint - θ3]
+  │                              │
+  │                         L3 (Foot - optional)
+  │                              │
+  └─────────────────────────► End Effector</pre>
+
+    <div class="no-break">
+        <h4>Thông số vật lý (mm):</h4>
+        <ul>
+            <li><strong>W</strong> (Basal) = 60 mm</li>
+            <li><strong>L1</strong> (Thigh) = 105 mm</li>
+            <li><strong>L2</strong> (Calf) = 132 mm</li>
+            <li><strong>L3</strong> (Foot) = 0 mm (tạm thời bỏ qua)</li>
+        </ul>
+    </div>
+
+    <div class="no-break">
+        <h4>Hệ tọa độ:</h4>
+        <ul>
+            <li><strong>Gốc tọa độ:</strong> Tâm thân robot</li>
+            <li><strong>Trục X:</strong> Hướng về phía trước</li>
+            <li><strong>Trục Y:</strong> Hướng sang trái</li>
+            <li><strong>Trục Z:</strong> Hướng lên trên (vuông góc với mặt đất)</li>
+        </ul>
+    </div>
+
+    <div class="no-break">
+        <h4>Vị trí Root Joint (chân LF):</h4>
+        <ul>
+            <li><strong>Root</strong> = (H/2, W<sub>body</sub>/2, 0) = (90, 40, 0) mm</li>
+            <li>H = 180 mm (khoảng cách chân trước-sau)</li>
+            <li>W<sub>body</sub> = 80 mm (khoảng cách chân trái-phải)</li>
+        </ul>
+    </div>
+
+    <hr>
+
+    <h3>1.2. Định Nghĩa Góc Khớp</h3>
+
+    <div class="step-box">
+        <h4>θ1 (Hip/Root Joint):</h4>
+        <ul>
+            <li>Khớp tại điểm nối giữa thân và chân</li>
+            <li>Xoay quanh trục X (trục dọc theo chiều dài thân)</li>
+            <li>θ1 = 0°: chân duỗi thẳng ra ngoài</li>
+            <li>θ1 > 0°: chân xoay xuống dưới</li>
+            <li>θ1 < 0°: chân xoay lên trên</li>
+            <li><strong>Giới hạn:</strong> -45° ≤ θ1 ≤ 45°</li>
+        </ul>
+    </div>
+
+    <div class="step-box">
+        <h4>θ2 (Knee Joint):</h4>
+        <ul>
+            <li>Khớp giữa Thigh và Calf</li>
+            <li>Xoay quanh trục Y (khi θ1 = 0)</li>
+            <li>θ2 = 0°: L1 thẳng đứng (vuông góc với mặt đất)</li>
+            <li>θ2 > 0°: L1 nghiêng về phía trước</li>
+            <li>θ2 < 0°: L1 nghiêng về phía sau</li>
+            <li><strong>Giới hạn:</strong> -90° ≤ θ2 ≤ 90°</li>
+        </ul>
+    </div>
+
+    <div class="step-box">
+        <h4>θ3 (Ankle Joint):</h4>
+        <ul>
+            <li>Khớp giữa Calf và Foot</li>
+            <li>Xoay quanh trục Y (khi θ1 = 0)</li>
+            <li>θ3 = 0°: L2 cùng phương với L1</li>
+            <li>θ3 > 0°: L2 gập về phía trước</li>
+            <li>θ3 < 0°: L2 gập về phía sau</li>
+            <li><strong>Giới hạn:</strong> -135° ≤ θ3 ≤ 0°</li>
+        </ul>
+    </div>
+
+    <div class="info-box">
+        <strong>Lưu ý quan trọng:</strong>
+        <ul>
+            <li>Khi θ1 ≠ 0, toàn bộ chân (W, L1, L2) xoay quanh trục X</li>
+            <li>θ2 và θ3 luôn xoay quanh trục Y (trong hệ tọa độ cục bộ của chân)</li>
+        </ul>
+    </div>
+
+    <!-- PHẦN 2 -->
+    <div class="page-break"></div>
+    <h2><span class="section-number">PHẦN 2:</span> FORWARD KINEMATICS (FK)</h2>
+
+    <p><strong>Mục tiêu:</strong> Cho trước các góc khớp (θ1, θ2, θ3), tính vị trí End Effector (X, Y, Z)</p>
+
+    <h3>2.1. Phương Pháp Giải</h3>
+
+    <div class="step-box">
+        <h4>Bước 1: Tính trong hệ tọa độ cục bộ (giả sử θ1 = 0)</h4>
+        <p>Khi θ1 = 0, chân nằm trong mặt phẳng xOz:</p>
+
+        <p><strong>Vị trí Hip (sau Basal W):</strong></p>
+        <pre>X<sub>hip_local</sub> = 0
+Y<sub>hip_local</sub> = W
+Z<sub>hip_local</sub> = 0</pre>
+
+        <p><strong>Vị trí Knee (sau Thigh L1):</strong></p>
+        <pre>X<sub>knee_local</sub> = X<sub>hip_local</sub> - L1 × sin(θ2)
+Y<sub>knee_local</sub> = Y<sub>hip_local</sub>
+Z<sub>knee_local</sub> = Z<sub>hip_local</sub> - L1 × cos(θ2)</pre>
+
+        <p><strong>Vị trí End Effector (sau Calf L2):</strong></p>
+        <pre>X<sub>end_local</sub> = X<sub>knee_local</sub> - L2 × sin(θ2 + θ3)
+Y<sub>end_local</sub> = Y<sub>knee_local</sub>
+Z<sub>end_local</sub> = Z<sub>knee_local</sub> - L2 × cos(θ2 + θ3)</pre>
+
+        <p><strong>Rút gọn:</strong></p>
+        <div class="formula-box">
+            X<sub>end_local</sub> = -L1 × sin(θ2) - L2 × sin(θ2 + θ3)<br>
+            Y<sub>end_local</sub> = W<br>
+            Z<sub>end_local</sub> = -L1 × cos(θ2) - L2 × cos(θ2 + θ3)
+        </div>
+    </div>
+
+    <div class="step-box">
+        <h4>Bước 2: Xoay quanh trục X bởi góc θ1</h4>
+
+        <p>Ma trận xoay quanh trục X:</p>
+        <pre>R<sub>x</sub>(θ1) = | 1      0           0        |
+         | 0   cos(θ1)   -sin(θ1)    |
+         | 0   sin(θ1)    cos(θ1)    |</pre>
+
+        <p>Áp dụng:</p>
+        <div class="formula-box">
+            X<sub>end</sub> = X<sub>end_local</sub><br>
+            Y<sub>end</sub> = Y<sub>end_local</sub> × cos(θ1) - Z<sub>end_local</sub> × sin(θ1)<br>
+            Z<sub>end</sub> = Y<sub>end_local</sub> × sin(θ1) + Z<sub>end_local</sub> × cos(θ1)
+        </div>
+    </div>
+
+    <h3>2.2. Công Thức Cuối Cùng (FK)</h3>
+
+    <div class="formula-box" style="background: #e8f5e9; border-color: #4CAF50; font-size: 13pt;">
+        <p><strong>Tính từ Root Joint (0,0,0) cục bộ:</strong></p>
+        <p style="margin: 10pt 0;">
+            <strong>X</strong> = -L1 × sin(θ2) - L2 × sin(θ2 + θ3)
+        </p>
+        <p style="margin: 10pt 0;">
+            <strong>Y</strong> = W × cos(θ1)
+        </p>
+        <p style="margin: 10pt 0;">
+            <strong>Z</strong> = -W × sin(θ1) - [L1 × cos(θ2) + L2 × cos(θ2 + θ3)] × cos(θ1)
+        </p>
+    </div>
+
+    <div class="info-box">
+        <strong>Chú ý:</strong>
+        <ul>
+            <li>Góc tính bằng radian: θ<sub>rad</sub> = θ<sub>deg</sub> × π/180</li>
+            <li>Dấu (-) trong Z vì trục Z hướng lên, chân hướng xuống</li>
+        </ul>
+    </div>
+
+    <!-- Bài tập FK -->
+    <div class="page-break"></div>
+    <h3>2.3. Bài Tập Thực Hành FK</h3>
+
+    <div class="no-break">
+        <h4>Bài 1: Tính toán với θ1 = 0°</h4>
+        <table>
+            <tr>
+                <th>θ2</th>
+                <th>θ3</th>
+                <th>X = ?</th>
+                <th>Y = ?</th>
+                <th>Z = ?</th>
+            </tr>
+            <tr>
+                <td>0°</td>
+                <td>0°</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>45°</td>
+                <td>-90°</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>60°</td>
+                <td>-120°</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>30°</td>
+                <td>-60°</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="no-break">
+        <h4>Bài 2: Tính toán với θ2 = 45°, θ3 = -90°</h4>
+        <table>
+            <tr>
+                <th>θ1</th>
+                <th>X = ?</th>
+                <th>Y = ?</th>
+                <th>Z = ?</th>
+            </tr>
+            <tr>
+                <td>0°</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>15°</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>30°</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>-15°</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="no-break">
+        <h4>Bài 3: Tự chọn góc</h4>
+        <p>Chọn bộ góc (θ1, θ2, θ3) bất kỳ trong giới hạn cho phép:</p>
+        <p>θ1 = _____________°</p>
+        <p>θ2 = _____________°</p>
+        <p>θ3 = _____________°</p>
+
+        <p><strong>Tính toán:</strong></p>
+        <div class="answer-space"></div>
+        <div class="answer-space"></div>
+        <div class="answer-space"></div>
+
+        <p><strong>Kết quả:</strong></p>
+        <p>X = _____________</p>
+        <p>Y = _____________</p>
+        <p>Z = _____________</p>
+
+        <div class="info-box">
+            <strong>Kiểm tra kết quả:</strong> Mở file <code>tools/fk_tester.html</code>, nhập các góc vào sliders và so sánh kết quả tính tay với kết quả trên màn hình.
+        </div>
+    </div>
+
+    <!-- PHẦN 3 -->
+    <div class="page-break"></div>
+    <h2><span class="section-number">PHẦN 3:</span> INVERSE KINEMATICS (IK)</h2>
+
+    <p><strong>Mục tiêu:</strong> Cho trước vị trí End Effector (X, Y, Z), tính các góc khớp (θ1, θ2, θ3)</p>
+
+    <h3>3.1. Phân Tích Bài Toán</h3>
+
+    <div class="no-break">
+        <p><strong>Đầu vào:</strong></p>
+        <ul>
+            <li>Vị trí mong muốn: P = (X, Y, Z)</li>
+            <li>Chiều dài links: W, L1, L2</li>
+        </ul>
+    </div>
+
+    <div class="no-break">
+        <p><strong>Đầu ra:</strong></p>
+        <ul>
+            <li>Góc khớp: θ1, θ2, θ3</li>
+        </ul>
+    </div>
+
+    <div class="info-box">
+        <p><strong>Đặc điểm:</strong></p>
+        <ul>
+            <li>Có thể có nhiều nghiệm (multiple solutions)</li>
+            <li>Có thể không có nghiệm (unreachable position)</li>
+            <li>Cần chọn nghiệm phù hợp với giới hạn vật lý</li>
+        </ul>
+    </div>
+
+    <h3>3.2. Phương Pháp Giải IK</h3>
+
+    <div class="step-box">
+        <h4>Bước 1: Tính θ1 (Hip angle)</h4>
+        <p>Từ công thức FK:</p>
+        <pre>Y = W × cos(θ1)</pre>
+        <p>Suy ra:</p>
+        <div class="formula-box">
+            θ1 = arccos(Y / W)
+        </div>
+        <p><strong>Lưu ý:</strong></p>
+        <ul>
+            <li>Điều kiện tồn tại: |Y| ≤ W</li>
+            <li>Nếu |Y| > W → Không đạt được (unreachable)</li>
+        </ul>
+    </div>
+
+    <div class="step-box">
+        <h4>Bước 2: Tính khoảng cách trong mặt phẳng xOz</h4>
+        <p>Từ công thức Z:</p>
+        <pre>Z = -W × sin(θ1) - [L1 × cos(θ2) + L2 × cos(θ2 + θ3)] × cos(θ1)</pre>
+        <p>Đặt:</p>
+        <pre>Z' = Z + W × sin(θ1)
+Z'' = Z' / cos(θ1) = -[L1 × cos(θ2) + L2 × cos(θ2 + θ3)]</pre>
+    </div>
+
+    <div class="step-box">
+        <h4>Bước 3: Áp dụng định lý cosin</h4>
+        <p>Bây giờ bài toán quy về 2D trong mặt phẳng xOz:</p>
+        <p>Khoảng cách đích: <strong>r = √(X² + Z''²)</strong></p>
+
+        <p>Sử dụng định lý cosin:</p>
+        <pre>r² = L1² + L2² - 2 × L1 × L2 × cos(180° - θ3)</pre>
+
+        <p>Suy ra:</p>
+        <div class="formula-box">
+            cos(θ3) = -(r² - L1² - L2²) / (2 × L1 × L2)<br><br>
+            θ3 = -arccos[(r² - L1² - L2²) / (2 × L1 × L2)]
+        </div>
+
+        <p><strong>Lưu ý:</strong></p>
+        <ul>
+            <li>Điều kiện tồn tại: |cos(θ3)| ≤ 1</li>
+            <li>Nếu r > L1 + L2 → Quá xa (unreachable)</li>
+            <li>Nếu r < |L1 - L2| → Quá gần (unreachable)</li>
+            <li>Dấu (-) vì θ3 thường âm (gập về phía sau)</li>
+        </ul>
+    </div>
+
+    <div class="step-box">
+        <h4>Bước 4: Tính θ2</h4>
+        <p>Sử dụng công thức:</p>
+        <pre>α = arctan2(Z'', X)
+β = arctan2(L2 × sin(θ3), L1 + L2 × cos(θ3))
+
+θ2 = α + β</pre>
+    </div>
+
+    <!-- Thuật toán IK -->
+    <div class="page-break"></div>
+    <h3>3.3. Thuật Toán IK Hoàn Chỉnh</h3>
+
+    <div class="step-box" style="background: #fff; border: 2pt solid #2196F3;">
+        <pre><strong>INPUT:</strong> Target position (X, Y, Z)
+
+<strong>STEP 1:</strong> Tính θ1
+  θ1 = arccos(Y / W)
+
+  CHECK: |Y| ≤ W
+  IF NOT → UNREACHABLE
+
+<strong>STEP 2:</strong> Tính khoảng cách hiệu dụng
+  Z' = Z + W × sin(θ1)
+  Z'' = Z' / cos(θ1)
+  r = √(X² + Z''²)
+
+  CHECK: |L1 - L2| ≤ r ≤ L1 + L2
+  IF NOT → UNREACHABLE
+
+<strong>STEP 3:</strong> Tính θ3
+  cos_θ3 = (r² - L1² - L2²) / (2 × L1 × L2)
+
+  CHECK: |cos_θ3| ≤ 1
+  IF NOT → UNREACHABLE
+
+  θ3 = -arccos(cos_θ3)
+
+<strong>STEP 4:</strong> Tính θ2
+  α = arctan2(Z'', X)
+  β = arctan2(L2 × sin(θ3), L1 + L2 × cos(θ3))
+  θ2 = α + β
+
+<strong>STEP 5:</strong> Kiểm tra giới hạn
+  CHECK: -45° ≤ θ1 ≤ 45°
+  CHECK: -90° ≤ θ2 ≤ 90°
+  CHECK: -135° ≤ θ3 ≤ 0°
+
+<strong>OUTPUT:</strong> (θ1, θ2, θ3)</pre>
+    </div>
+
+    <!-- Bài tập IK -->
+    <div class="page-break"></div>
+    <h3>3.4. Bài Tập Thực Hành IK</h3>
+
+    <div class="no-break">
+        <h4>Bài 4: Tính IK cho các vị trí đơn giản</h4>
+
+        <p><strong>Case 1: Chân duỗi thẳng xuống</strong></p>
+        <pre>Target: X = 0, Y = 60, Z = -237
+(Khi θ1=0, θ2=0, θ3=0 thì chân duỗi thẳng)</pre>
+
+        <p><strong>Bước 1: Tính θ1</strong></p>
+        <p>θ1 = arccos(60/60) = arccos(1) = _____________°</p>
+        <div class="answer-space"></div>
+
+        <p><strong>Bước 2: Tính r</strong></p>
+        <p>Z' = -237 + 60×sin(0) = _____________</p>
+        <p>Z'' = Z'/cos(0) = _____________</p>
+        <p>r = √(0² + Z''²) = _____________</p>
+        <div class="answer-space"></div>
+
+        <p><strong>Bước 3: Tính θ3</strong></p>
+        <p>cos(θ3) = (r² - 105² - 132²) / (2×105×132) = _____________</p>
+        <p>θ3 = _____________°</p>
+        <div class="answer-space"></div>
+
+        <p><strong>Bước 4: Tính θ2</strong></p>
+        <p>α = arctan2(Z'', 0) = _____________°</p>
+        <p>β = arctan2(132×sin(θ3), 105 + 132×cos(θ3)) = _____________°</p>
+        <p>θ2 = _____________°</p>
+        <div class="answer-space"></div>
+    </div>
+
+    <div class="no-break">
+        <p><strong>Case 2: Tư thế đứng chuẩn</strong></p>
+        <pre>Target: X = -104.45, Y = 60, Z = -167.45
+(Khoảng cách hợp lý cho tư thế đứng)</pre>
+
+        <p>θ1 = _____________°</p>
+        <p>θ2 = _____________°</p>
+        <p>θ3 = _____________°</p>
+        <div class="answer-space"></div>
+        <div class="answer-space"></div>
+        <div class="answer-space"></div>
+    </div>
+
+    <!-- Bài tập workspace -->
+    <div class="page-break"></div>
+    <h4>Bài 5: Workspace Analysis</h4>
+
+    <p>Vẽ vùng làm việc (workspace) của chân robot:</p>
+
+    <ol>
+        <li>
+            <p>Với θ1 = 0°, vẽ vùng đạt được trong mặt phẳng xOz:</p>
+            <ul>
+                <li>Bán kính tối đa: r<sub>max</sub> = L1 + L2 = _____________</li>
+                <li>Bán kính tối thiểu: r<sub>min</sub> = |L1 - L2| = _____________</li>
+            </ul>
+        </li>
+        <li>
+            <p>Với Y = W, chân có thể đạt những điểm nào?</p>
+            <ul>
+                <li>Vẽ hình tròn tâm O, bán kính r<sub>max</sub></li>
+                <li>Vẽ hình tròn tâm O, bán kính r<sub>min</sub></li>
+                <li>Vùng giữa 2 hình tròn là workspace</li>
+            </ul>
+        </li>
+        <li>
+            <p>Khi thay đổi θ1 (-45° đến 45°), workspace thay đổi như thế nào?</p>
+        </li>
+    </ol>
+
+    <div style="height: 150pt; border: 1pt solid #ccc; margin: 20pt 0;">
+        <p style="text-align: center; padding: 60pt 0; color: #999;">Vẽ workspace tại đây</p>
+    </div>
+
+    <!-- PHẦN 4 -->
+    <div class="page-break"></div>
+    <h2><span class="section-number">PHẦN 4:</span> KIỂM TRA VÀ ĐÁNH GIÁ</h2>
+
+    <h3>4.1. Kiểm Tra FK → IK → FK</h3>
+
+    <div class="info-box">
+        <p><strong>Quy trình kiểm tra:</strong></p>
+        <ol>
+            <li>Chọn bộ góc ban đầu: (θ1, θ2, θ3)</li>
+            <li>Tính FK → Được vị trí (X, Y, Z)</li>
+            <li>Dùng (X, Y, Z) tính IK → Được (θ1', θ2', θ3')</li>
+            <li>So sánh: (θ1, θ2, θ3) với (θ1', θ2', θ3')</li>
+            <li>Sai số cho phép: < 0.1°</li>
+        </ol>
+    </div>
+
+    <h4>Bài 6: Kiểm tra chu trình FK-IK</h4>
+
+    <table style="font-size: 9pt;">
+        <tr>
+            <th>Góc ban đầu</th>
+            <th>FK Result</th>
+            <th>IK Result</th>
+            <th>Sai số</th>
+        </tr>
+        <tr>
+            <td>θ1=0<br>θ2=45<br>θ3=-90</td>
+            <td>X=___<br>Y=___<br>Z=___</td>
+            <td>θ1'=___<br>θ2'=___<br>θ3'=___</td>
+            <td>Δθ=___</td>
+        </tr>
+        <tr>
+            <td>θ1=15<br>θ2=60<br>θ3=-120</td>
+            <td>X=___<br>Y=___<br>Z=___</td>
+            <td>θ1'=___<br>θ2'=___<br>θ3'=___</td>
+            <td>Δθ=___</td>
+        </tr>
+        <tr>
+            <td>θ1=-30<br>θ2=30<br>θ3=-60</td>
+            <td>X=___<br>Y=___<br>Z=___</td>
+            <td>θ1'=___<br>θ2'=___<br>θ3'=___</td>
+            <td>Δθ=___</td>
+        </tr>
+    </table>
+
+    <h3>4.2. Trường Hợp Đặc Biệt</h3>
+
+    <div class="step-box">
+        <p><strong>Case 1: Singularity (Kỳ dị)</strong></p>
+        <ul>
+            <li>Xảy ra khi chân duỗi thẳng hoàn toàn (θ3 = 0°)</li>
+            <li>Hoặc khi chân gập hoàn toàn (r = r<sub>min</sub>)</li>
+            <li>Tại singularity, có vô số nghiệm cho θ2</li>
+        </ul>
+    </div>
+
+    <div class="step-box">
+        <p><strong>Case 2: Unreachable Position</strong></p>
+        <ul>
+            <li>Điểm nằm ngoài workspace</li>
+            <li>|Y| > W</li>
+            <li>r > L1 + L2</li>
+            <li>r < |L1 - L2|</li>
+        </ul>
+    </div>
+
+    <h4>Bài 7: Xác định các trường hợp đặc biệt</h4>
+
+    <p>Với các vị trí sau, xác định có đạt được không? Tại sao?</p>
+
+    <ol>
+        <li>(X=0, Y=100, Z=-200): _____________________________________</li>
+        <div class="answer-space"></div>
+
+        <li>(X=-300, Y=60, Z=-100): _____________________________________</li>
+        <div class="answer-space"></div>
+
+        <li>(X=-100, Y=60, Z=0): _____________________________________</li>
+        <div class="answer-space"></div>
+
+        <li>(X=-118, Y=52, Z=-200): _____________________________________</li>
+        <div class="answer-space"></div>
+    </ol>
+
+    <!-- PHẦN 5 -->
+    <div class="page-break"></div>
+    <h2><span class="section-number">PHẦN 5:</span> BÀI TẬP NÂNG CAO</h2>
+
+    <h3>5.1. Quỹ đạo chuyển động (Trajectory Planning)</h3>
+
+    <p><strong>Mục tiêu:</strong> Lập kế hoạch cho chân di chuyển từ điểm A đến điểm B</p>
+
+    <h4>Bài 8: Trajectory thẳng (Linear Interpolation)</h4>
+
+    <pre>Điểm bắt đầu: A = (X<sub>a</sub>, Y<sub>a</sub>, Z<sub>a</sub>) = (-74, 60, -167)
+Điểm kết thúc: B = (X<sub>b</sub>, Y<sub>b</sub>, Z<sub>b</sub>) = (-135, 60, -167)
+Số bước: N = 10
+
+Tại mỗi bước i (i = 0, 1, 2, ..., 10):
+  t = i / N
+  X<sub>i</sub> = X<sub>a</sub> + t × (X<sub>b</sub> - X<sub>a</sub>)
+  Y<sub>i</sub> = Y<sub>a</sub> + t × (Y<sub>b</sub> - Y<sub>a</sub>)
+  Z<sub>i</sub> = Z<sub>a</sub> + t × (Z<sub>b</sub> - Z<sub>a</sub>)
+
+  Tính IK cho (X<sub>i</sub>, Y<sub>i</sub>, Z<sub>i</sub>) → (θ1<sub>i</sub>, θ2<sub>i</sub>, θ3<sub>i</sub>)</pre>
+
+    <p>Điền vào bảng:</p>
+
+    <table style="font-size: 8pt;">
+        <tr>
+            <th>Bước</th>
+            <th>t</th>
+            <th>X</th>
+            <th>Y</th>
+            <th>Z</th>
+            <th>θ1</th>
+            <th>θ2</th>
+            <th>θ3</th>
+        </tr>
+        <tr>
+            <td>0</td>
+            <td>0.0</td>
+            <td>-74</td>
+            <td>60</td>
+            <td>-167</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>1</td>
+            <td>0.1</td>
+            <td></td>
+            <td>60</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>0.2</td>
+            <td></td>
+            <td>60</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>...</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>10</td>
+            <td>1.0</td>
+            <td>-135</td>
+            <td>60</td>
+            <td>-167</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+    </table>
+
+    <!-- PHẦN 6 -->
+    <div class="page-break"></div>
+    <h2><span class="section-number">PHẦN 6:</span> TÀI LIỆU THAM KHẢO</h2>
+
+    <h3>6.1. Công Thức Lượng Giác Cần Nhớ</h3>
+
+    <div class="formula-box">
+        sin²(θ) + cos²(θ) = 1
+    </div>
+
+    <div class="formula-box">
+        sin(-θ) = -sin(θ)<br>
+        cos(-θ) = cos(θ)
+    </div>
+
+    <div class="formula-box">
+        sin(α + β) = sin(α)cos(β) + cos(α)sin(β)<br>
+        cos(α + β) = cos(α)cos(β) - sin(α)sin(β)
+    </div>
+
+    <div class="info-box">
+        <strong>arctan2(y, x):</strong> Tính góc từ tọa độ (x, y), xét cả 4 góc phần tư
+    </div>
+
+    <h3>6.2. Ma Trận Xoay 3D</h3>
+
+    <p><strong>Xoay quanh trục X:</strong></p>
+    <pre>R<sub>x</sub>(θ) = [1      0           0      ]
+       [0   cos(θ)    -sin(θ)    ]
+       [0   sin(θ)     cos(θ)    ]</pre>
+
+    <p><strong>Xoay quanh trục Y:</strong></p>
+    <pre>R<sub>y</sub>(θ) = [cos(θ)    0    sin(θ) ]
+       [   0      1       0   ]
+       [-sin(θ)   0    cos(θ) ]</pre>
+
+    <p><strong>Xoay quanh trục Z:</strong></p>
+    <pre>R<sub>z</sub>(θ) = [cos(θ)  -sin(θ)   0]
+       [sin(θ)   cos(θ)   0]
+       [   0        0     1]</pre>
+
+    <h3>6.3. Định Lý Cosin</h3>
+
+    <p>Cho tam giác với các cạnh a, b, c và góc C đối diện cạnh c:</p>
+
+    <div class="formula-box">
+        c² = a² + b² - 2ab×cos(C)
+    </div>
+
+    <div class="formula-box">
+        cos(C) = (a² + b² - c²) / (2ab)
+    </div>
+
+    <!-- PHẦN 7 -->
+    <div class="page-break"></div>
+    <h2><span class="section-number">PHẦN 7:</span> ĐÁP ÁN VÀ HƯỚNG DẪN GIẢI</h2>
+
+    <h3>7.1. Đáp Án Bài 1</h3>
+
+    <table>
+        <tr>
+            <th>θ2</th>
+            <th>θ3</th>
+            <th>X</th>
+            <th>Y</th>
+            <th>Z</th>
+        </tr>
+        <tr>
+            <td>0°</td>
+            <td>0°</td>
+            <td>0</td>
+            <td>60</td>
+            <td>-237</td>
+        </tr>
+        <tr>
+            <td>45°</td>
+            <td>-90°</td>
+            <td>-167.3</td>
+            <td>60</td>
+            <td>-116.7</td>
+        </tr>
+        <tr>
+            <td>60°</td>
+            <td>-120°</td>
+            <td>-204.8</td>
+            <td>60</td>
+            <td>-66.2</td>
+        </tr>
+        <tr>
+            <td>30°</td>
+            <td>-60°</td>
+            <td>-167.0</td>
+            <td>60</td>
+            <td>-144.6</td>
+        </tr>
+    </table>
+
+    <h4>Hướng dẫn giải chi tiết:</h4>
+
+    <div class="step-box">
+        <p><strong>Case θ2=0°, θ3=0°:</strong></p>
+        <pre>X = -L1×sin(0) - L2×sin(0) = 0
+
+Y = W×cos(0) = 60×1 = 60
+
+Z = -W×sin(0) - [L1×cos(0) + L2×cos(0)]×cos(0)
+  = 0 - [105×1 + 132×1]×1
+  = -237</pre>
+    </div>
+
+    <div class="step-box">
+        <p><strong>Case θ2=45°, θ3=-90°:</strong></p>
+        <pre>X = -105×sin(45°) - 132×sin(45°-90°)
+  = -105×0.707 - 132×sin(-45°)
+  = -74.24 - 132×(-0.707)
+  = -74.24 + 93.32
+  = -167.3 mm
+
+Y = 60×cos(0) = 60 mm
+
+Z = -60×sin(0) - [105×cos(45°) + 132×cos(-45°)]×cos(0)
+  = 0 - [105×0.707 + 132×0.707]×1
+  = -[74.24 + 93.32]
+  = -167.56 mm</pre>
+    </div>
+
+    <h3>7.2. Lời Khuyên Khi Tính Toán</h3>
+
+    <ol>
+        <li><strong>Luôn chuyển độ sang radian:</strong> θ<sub>rad</sub> = θ<sub>deg</sub> × π/180</li>
+        <li><strong>Kiểm tra đơn vị:</strong> Đảm bảo tất cả chiều dài cùng đơn vị (mm)</li>
+        <li><strong>Vẽ sơ đồ:</strong> Trước khi tính, vẽ hình để hiểu rõ bài toán</li>
+        <li><strong>Kiểm tra giới hạn:</strong> Sau khi tính IK, kiểm tra góc có trong giới hạn không</li>
+        <li><strong>Xác minh bằng FK:</strong> Sau khi tính IK, dùng FK để kiểm tra lại</li>
+    </ol>
+
+    <!-- PHẦN 8 -->
+    <div class="page-break"></div>
+    <h2><span class="section-number">PHẦN 8:</span> KẾ HOẠCH HỌC TẬP</h2>
+
+    <h3>Tuần 1: Forward Kinematics</h3>
+    <ul class="checklist">
+        <li>Đọc PHẦN 1 và PHẦN 2</li>
+        <li>Làm Bài 1, 2, 3</li>
+        <li>Kiểm tra kết quả với FK Tester</li>
+        <li>Vẽ sơ đồ chân robot trong các tư thế khác nhau</li>
+    </ul>
+
+    <h3>Tuần 2: Inverse Kinematics</h3>
+    <ul class="checklist">
+        <li>Đọc PHẦN 3</li>
+        <li>Làm Bài 4, 5</li>
+        <li>Phân tích workspace</li>
+        <li>Code thuật toán IK (Python hoặc C++)</li>
+    </ul>
+
+    <h3>Tuần 3: Kiểm Tra và Nâng Cao</h3>
+    <ul class="checklist">
+        <li>Làm Bài 6, 7 (Kiểm tra FK-IK)</li>
+        <li>Làm Bài 8 (Trajectory planning)</li>
+        <li>Thử nghiệm trên robot thật (nếu có)</li>
+    </ul>
+
+    <h3>Tuần 4: Chuyên Sâu</h3>
+    <ul class="checklist">
+        <li>Làm Bài 9, 10 (Vận tốc, Jacobian)</li>
+        <li>Nghiên cứu các thuật toán IK khác</li>
+        <li>Tối ưu hóa code</li>
+    </ul>
+
+    <hr>
+
+    <h2>GHI CHÚ CÁ NHÂN</h2>
+
+    <p><em>(Dành chỗ để ghi chú trong quá trình học)</em></p>
+
+    <h4>Những điểm khó:</h4>
+    <div class="answer-space"></div>
+    <div class="answer-space"></div>
+    <div class="answer-space"></div>
+
+    <h4>Câu hỏi cần làm rõ:</h4>
+    <div class="answer-space"></div>
+    <div class="answer-space"></div>
+    <div class="answer-space"></div>
+
+    <h4>Ý tưởng cải tiến:</h4>
+    <div class="answer-space"></div>
+    <div class="answer-space"></div>
+    <div class="answer-space"></div>
+
+    <hr>
+
+    <div style="text-align: center; margin-top: 40pt;">
+        <h2>Chúc bạn học tốt! 🚀</h2>
+        <p style="font-style: italic; color: #666;">
+            Tài liệu này được tạo để hỗ trợ học tập kinematics cho robot dog.<br>
+            Có thể in ra và điền vào các bài tập thực hành.
+        </p>
+    </div>
+
+    <!-- Instructions to print -->
+    <div class="no-print page-break"></div>
+    <div class="no-print" style="background: #e3f2fd; padding: 20pt; border: 2pt solid #2196F3; margin-top: 20pt;">
+        <h2 style="color: #1976D2;">📄 Hướng Dẫn In PDF</h2>
+        <ol style="font-size: 12pt; line-height: 2;">
+            <li>Nhấn <strong>Ctrl + P</strong> (hoặc Cmd + P trên Mac)</li>
+            <li>Chọn <strong>Destination: Save as PDF</strong></li>
+            <li>Trong <strong>More settings</strong>:
+                <ul>
+                    <li>Paper size: A4</li>
+                    <li>Margins: Default</li>
+                    <li>Scale: 100%</li>
+                </ul>
+            </li>
+            <li>Click <strong>Save</strong></li>
+        </ol>
+        <p style="margin-top: 10pt; color: #555;">
+            <strong>Lưu ý:</strong> Trang hướng dẫn này sẽ không được in ra trong file PDF.
+        </p>
+    </div>
+</body>
+</html>

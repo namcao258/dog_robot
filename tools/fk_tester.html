@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forward Kinematics Tester - LF Leg 3D</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 30px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 450px 1fr;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .panel {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .panel h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .control-group {
+            margin-bottom: 25px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+            font-size: 1.1em;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            height: 8px;
+            border-radius: 5px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .value-display {
+            min-width: 80px;
+            text-align: right;
+            font-weight: bold;
+            font-size: 1.2em;
+            color: #667eea;
+            background: white;
+            padding: 8px 12px;
+            border-radius: 5px;
+            border: 2px solid #667eea;
+        }
+
+        .param-group {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .param-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .param-item label {
+            font-size: 0.9em;
+            margin-bottom: 5px;
+            color: #666;
+        }
+
+        .param-item input[type="number"] {
+            padding: 8px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+            text-align: center;
+        }
+
+        .formula-group {
+            margin-bottom: 15px;
+        }
+
+        .formula-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+            font-size: 0.95em;
+        }
+
+        .formula-input {
+            width: 100%;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            background: #fff;
+            transition: border-color 0.3s;
+        }
+
+        .formula-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .formula-help {
+            font-size: 0.75em;
+            color: #666;
+            margin-top: 3px;
+            font-style: italic;
+        }
+
+        .result-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .result-box h3 {
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .result-item {
+            background: rgba(255,255,255,0.2);
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .result-item .label {
+            font-size: 0.85em;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .result-item .value {
+            font-size: 1.6em;
+            font-weight: bold;
+        }
+
+        #canvas3d {
+            width: 100%;
+            height: 600px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            border: 2px solid #ddd;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            border: 2px solid #f5c6cb;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 5px;
+            margin-top: 10px;
+            display: none;
+            font-size: 0.9em;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: all 0.3s;
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .preset-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .preset-btn {
+            padding: 10px;
+            font-size: 0.9em;
+        }
+
+        .view-controls {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .view-controls h4 {
+            color: #1976D2;
+            margin-bottom: 10px;
+            font-size: 1em;
+        }
+
+        .view-controls p {
+            color: #555;
+            font-size: 0.9em;
+            margin: 3px 0;
+        }
+
+        .info-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px;
+            margin-top: 15px;
+            border-radius: 5px;
+            font-size: 0.85em;
+            color: #856404;
+        }
+
+        .diagram-box {
+            background: #e8f5e9;
+            border-left: 4px solid #4CAF50;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 5px;
+            font-size: 0.85em;
+        }
+
+        .diagram-box h4 {
+            color: #2e7d32;
+            margin-bottom: 10px;
+        }
+
+        .diagram-box pre {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8em;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 Forward Kinematics Tester 3D</h1>
+        <p class="subtitle">Left Front (LF) Leg - Quadruped Robot Structure</p>
+
+        <div class="main-grid">
+            <!-- Left Panel: Controls -->
+            <div>
+                <div class="panel">
+                    <h2>📏 Body Dimensions (mm)</h2>
+                    <div class="param-group">
+                        <div class="param-item">
+                            <label>H (Body Length)</label>
+                            <input type="number" id="H" value="180" min="0" max="300" step="1">
+                        </div>
+                        <div class="param-item">
+                            <label>W_body (Body Width)</label>
+                            <input type="number" id="W_body" value="80" min="0" max="200" step="1">
+                        </div>
+                    </div>
+                    <div class="info-box" style="margin-top: 10px;">
+                        <strong>Root Joint LF:</strong> (H/2, W_body/2, 0) = (<span id="root-x">90</span>, <span id="root-y">40</span>, 0)
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h2>⚙️ Link Lengths (mm)</h2>
+                    <div class="param-group">
+                        <div class="param-item">
+                            <label>L1 (Basal)</label>
+                            <input type="number" id="L1" value="60" min="0" max="200" step="1">
+                        </div>
+                        <div class="param-item">
+                            <label>L2 (Thigh)</label>
+                            <input type="number" id="L2" value="105" min="0" max="200" step="1">
+                        </div>
+                        <div class="param-item">
+                            <label>L3 (Calf)</label>
+                            <input type="number" id="L3" value="132" min="0" max="200" step="1">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h2>🎛️ Joint Angles</h2>
+
+                    <div class="control-group">
+                        <label>θ1 (Hip) - Abduction/Adduction</label>
+                        <div class="slider-container">
+                            <input type="range" id="theta1" min="-45" max="45" value="0" step="1">
+                            <span class="value-display" id="theta1-value">0°</span>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label>θ2 (Knee) - Flexion/Extension</label>
+                        <div class="slider-container">
+                            <input type="range" id="theta2" min="-90" max="90" value="45" step="1">
+                            <span class="value-display" id="theta2-value">45°</span>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label>θ3 (Ankle) - Flexion/Extension</label>
+                        <div class="slider-container">
+                            <input type="range" id="theta3" min="-135" max="0" value="-90" step="1">
+                            <span class="value-display" id="theta3-value">-90°</span>
+                        </div>
+                    </div>
+
+                    <div class="preset-buttons">
+                        <button class="preset-btn" onclick="setPreset('home')">🏠 Home</button>
+                        <button class="preset-btn" onclick="setPreset('stand')">🧍 Stand</button>
+                        <button class="preset-btn" onclick="setPreset('high')">⬆️ High</button>
+                        <button class="preset-btn" onclick="setPreset('low')">⬇️ Low</button>
+                        <button class="preset-btn" onclick="setPreset('forward')">➡️ Forward</button>
+                        <button class="preset-btn" onclick="setPreset('backward')">⬅️ Backward</button>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h2>📐 FK Formulas</h2>
+
+                    <div class="formula-group">
+                        <label>X (Forward):</label>
+                        <input type="text" class="formula-input" id="formula-x"
+                               value="-L2*sin(theta2*PI/180) - L3*sin((theta2+theta3)*PI/180)">
+                        <p class="formula-help">Forward movement from θ2, θ3</p>
+                    </div>
+
+                    <div class="formula-group">
+                        <label>Y (Lateral):</label>
+                        <input type="text" class="formula-input" id="formula-y"
+                               value="L1*cos(theta1*PI/180)">
+                        <p class="formula-help">L1 (Basal) rotated by θ1</p>
+                    </div>
+
+                    <div class="formula-group">
+                        <label>Z (Vertical):</label>
+                        <input type="text" class="formula-input" id="formula-z"
+                               value="-L1*sin(theta1*PI/180) - L2*cos(theta2*PI/180)*cos(theta1*PI/180) - L3*cos((theta2+theta3)*PI/180)*cos(theta1*PI/180)">
+                        <p class="formula-help">Down from body, affected by θ1</p>
+                    </div>
+
+                    <div class="error-message" id="error-message"></div>
+                    <button onclick="calculate()">🔄 Recalculate</button>
+                </div>
+
+                <div class="result-box">
+                    <h3>📊 End Effector Position</h3>
+                    <div style="margin-bottom: 15px; text-align: center;">
+                        <label style="margin-right: 10px;">
+                            <input type="radio" name="coord-mode" value="relative" checked onchange="calculate()">
+                            Relative (from Root)
+                        </label>
+                        <label>
+                            <input type="radio" name="coord-mode" value="absolute" onchange="calculate()">
+                            Absolute (from Body Center)
+                        </label>
+                    </div>
+                    <div class="result-grid">
+                        <div class="result-item">
+                            <div class="label">X (mm)</div>
+                            <div class="value" id="result-x">0.00</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="label">Y (mm)</div>
+                            <div class="value" id="result-y">0.00</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="label">Z (mm)</div>
+                            <div class="value" id="result-z">0.00</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="result-box" style="margin-top: 15px;">
+                    <h3>📏 Additional Info</h3>
+                    <div class="result-grid">
+                        <div class="result-item">
+                            <div class="label">Reach XY</div>
+                            <div class="value" id="result-r" style="font-size: 1.2em;">0.00</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="label">Total</div>
+                            <div class="value" id="result-reach" style="font-size: 1.2em;">0.00</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="label">Ground</div>
+                            <div class="value" id="result-height" style="font-size: 1.2em;">0.00</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="diagram-box">
+                    <h4>🦴 Leg Structure:</h4>
+                    <pre>Body (Root)
+  │
+  ├─ Basal (W)
+  │
+  └─[Hip θ1]
+      │
+      ├─ Thigh (L1)
+      │
+      └─[Knee θ2]
+          │
+          ├─ Calf (L2)
+          │
+          └─[Ankle θ3]
+              │
+              └─ Foot (L3)</pre>
+                </div>
+
+                <div class="view-controls">
+                    <h4>🎮 3D View Controls:</h4>
+                    <p>🖱️ <strong>Left Click + Drag:</strong> Rotate view</p>
+                    <p>🖱️ <strong>Right Click + Drag:</strong> Pan view</p>
+                    <p>🔄 <strong>Mouse Wheel:</strong> Zoom in/out</p>
+                </div>
+
+                <div class="info-box">
+                    <strong>💡 Tip:</strong> Angles in degrees. Convert to radian: theta*PI/180
+                </div>
+            </div>
+
+            <!-- Right Panel: 3D Visualization -->
+            <div>
+                <div class="panel" style="padding: 15px;">
+                    <h2>🎨 3D Visualization</h2>
+                    <div id="canvas3d"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Three.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <script>
+        // Three.js Setup
+        let scene, camera, renderer, controls;
+        let bodyMesh;
+        let linkBasal, linkThigh, linkCalf, linkFoot;
+        let jointRoot, jointHip, jointKnee, jointAnkle, endEffector;
+        let axesHelper, gridHelper;
+
+        const PI = Math.PI;
+
+        // Initialize Three.js
+        function initThreeJS() {
+            const container = document.getElementById('canvas3d');
+
+            // Scene
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x1a1a2e);
+
+            // Camera
+            camera = new THREE.PerspectiveCamera(
+                50,
+                container.clientWidth / container.clientHeight,
+                1,
+                2000
+            );
+            camera.position.set(300, 200, 400);
+            camera.lookAt(0, 0, 0);
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.shadowMap.enabled = true;
+            container.appendChild(renderer.domElement);
+
+            // Controls
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+
+            // Lights
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(200, 300, 200);
+            directionalLight.castShadow = true;
+            scene.add(directionalLight);
+
+            const pointLight = new THREE.PointLight(0x667eea, 0.5);
+            pointLight.position.set(-200, 200, 200);
+            scene.add(pointLight);
+
+            // Grid (ground plane at Z=0)
+            gridHelper = new THREE.GridHelper(500, 20, 0x667eea, 0x444444);
+            gridHelper.rotation.x = Math.PI / 2; // Rotate to XY plane
+            scene.add(gridHelper);
+
+            // Axes
+            axesHelper = new THREE.AxesHelper(150);
+            scene.add(axesHelper);
+
+            // Create body (centered at origin) - will be updated dynamically
+            updateBodyMesh();
+
+            // Create leg components
+            createLegComponents();
+
+            // Handle window resize
+            window.addEventListener('resize', onWindowResize);
+
+            // Animation loop
+            animate();
+        }
+
+        function updateBodyMesh() {
+            // Remove old body if exists
+            if (bodyMesh) {
+                scene.remove(bodyMesh);
+            }
+
+            // Get current body dimensions
+            const H = parseFloat(HInput.value);
+            const W_body = parseFloat(WbodyInput.value);
+
+            // Create new body mesh
+            const bodyGeom = new THREE.BoxGeometry(H, W_body, 40);
+            const bodyMat = new THREE.MeshPhongMaterial({
+                color: 0xcc0000,
+                transparent: true,
+                opacity: 0.7
+            });
+            bodyMesh = new THREE.Mesh(bodyGeom, bodyMat);
+            bodyMesh.position.set(0, 0, 0); // Body center at origin
+            scene.add(bodyMesh);
+        }
+
+        function createLegComponents() {
+            // Joint spheres
+            const jointGeom = new THREE.SphereGeometry(6, 16, 16);
+
+            jointRoot = new THREE.Mesh(jointGeom, new THREE.MeshPhongMaterial({ color: 0x888888 }));
+            scene.add(jointRoot);
+
+            jointHip = new THREE.Mesh(jointGeom, new THREE.MeshPhongMaterial({ color: 0xFFEB3B }));
+            scene.add(jointHip);
+
+            jointKnee = new THREE.Mesh(jointGeom, new THREE.MeshPhongMaterial({ color: 0x4CAF50 }));
+            scene.add(jointKnee);
+
+            jointAnkle = new THREE.Mesh(jointGeom, new THREE.MeshPhongMaterial({ color: 0x2196F3 }));
+            scene.add(jointAnkle);
+
+            endEffector = new THREE.Mesh(
+                new THREE.SphereGeometry(8, 16, 16),
+                new THREE.MeshPhongMaterial({ color: 0xf44336 })
+            );
+            scene.add(endEffector);
+
+            // Links will be created dynamically
+            linkBasal = null;
+            linkThigh = null;
+            linkCalf = null;
+            linkFoot = null;
+        }
+
+        function createCylinder(start, end, color, radius = 4) {
+            const direction = new THREE.Vector3().subVectors(end, start);
+            const length = direction.length();
+
+            if (length < 0.1) return null; // Skip if too short
+
+            const orientation = new THREE.Matrix4();
+            orientation.lookAt(start, end, new THREE.Object3D().up);
+            orientation.multiply(new THREE.Matrix4().makeRotationX(Math.PI / 2));
+
+            const geometry = new THREE.CylinderGeometry(radius, radius, length, 16);
+            const material = new THREE.MeshPhongMaterial({ color: color });
+            const cylinder = new THREE.Mesh(geometry, material);
+
+            cylinder.applyMatrix4(orientation);
+            cylinder.position.copy(new THREE.Vector3().addVectors(start, direction.multiplyScalar(0.5)));
+
+            return cylinder;
+        }
+
+        function updateLeg3D(L1, L2, L3, theta1, theta2, theta3, x, y, z) {
+            // Remove old links
+            if (linkBasal) scene.remove(linkBasal);
+            if (linkThigh) scene.remove(linkThigh);
+            if (linkCalf) scene.remove(linkCalf);
+            if (linkFoot) scene.remove(linkFoot);
+
+            // Convert angles to radians
+            const t1 = theta1 * PI / 180;
+            const t2 = theta2 * PI / 180;
+            const t3 = theta3 * PI / 180;
+
+            // Calculate joint positions in 3D
+            // Body dimensions from inputs
+            const H = parseFloat(HInput.value);
+            const bodyW = parseFloat(WbodyInput.value);
+
+            // Root joint (LF position: front-left corner of body)
+            const pRoot = new THREE.Vector3(H/2, bodyW/2, 0);
+
+            // Calculate positions in local frame (theta1=0 first)
+            // Then rotate entire leg around X-axis by theta1
+
+            // Step 1: Calculate in local frame (theta1=0)
+            // L1 is Basal, L2 is Thigh, L3 is Calf
+            let localHip = new THREE.Vector3(0, L1, 0);
+            let localKnee = new THREE.Vector3(
+                -L2 * Math.sin(t2),
+                L1,
+                -L2 * Math.cos(t2)
+            );
+            let localEnd = new THREE.Vector3(
+                -L2 * Math.sin(t2) - L3 * Math.sin(t2 + t3),
+                L1,
+                -L2 * Math.cos(t2) - L3 * Math.cos(t2 + t3)
+            );
+
+            // Step 2: Rotate around X-axis by theta1
+            function rotateAroundX(point, angle) {
+                const y = point.y * Math.cos(angle) - point.z * Math.sin(angle);
+                const z = point.y * Math.sin(angle) + point.z * Math.cos(angle);
+                return new THREE.Vector3(point.x, y, z);
+            }
+
+            const pHip = rotateAroundX(localHip, t1).add(pRoot);
+            const pKnee = rotateAroundX(localKnee, t1).add(pRoot);
+            const pEnd = rotateAroundX(localEnd, t1).add(pRoot);
+
+            // Update joint positions
+            jointRoot.position.copy(pRoot);
+            jointHip.position.copy(pHip);
+            jointKnee.position.copy(pKnee);
+            jointAnkle.position.copy(pEnd);  // Ankle is now the end effector
+            endEffector.position.copy(pEnd);
+
+            // Create new links
+            linkBasal = createCylinder(pRoot, pHip, 0x888888, 4);
+            linkThigh = createCylinder(pHip, pKnee, 0xFFEB3B, 5);
+            linkCalf = createCylinder(pKnee, pEnd, 0x4CAF50, 5);
+
+            if (linkBasal) scene.add(linkBasal);
+            if (linkThigh) scene.add(linkThigh);
+            if (linkCalf) scene.add(linkCalf);
+
+            // Add trajectory point
+            addTrajectoryPoint(pEnd);
+        }
+
+        // Trajectory visualization
+        const trajectoryPoints = [];
+        const maxTrajectoryPoints = 50;
+
+        function addTrajectoryPoint(position) {
+            const pointGeom = new THREE.SphereGeometry(2, 8, 8);
+            const pointMat = new THREE.MeshBasicMaterial({
+                color: 0xff00ff,
+                transparent: true,
+                opacity: 0.6
+            });
+            const point = new THREE.Mesh(pointGeom, pointMat);
+            point.position.copy(position);
+            scene.add(point);
+
+            trajectoryPoints.push(point);
+
+            if (trajectoryPoints.length > maxTrajectoryPoints) {
+                const oldPoint = trajectoryPoints.shift();
+                scene.remove(oldPoint);
+            }
+        }
+
+        function clearTrajectory() {
+            trajectoryPoints.forEach(point => scene.remove(point));
+            trajectoryPoints.length = 0;
+        }
+
+        function onWindowResize() {
+            const container = document.getElementById('canvas3d');
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // Get elements
+        const theta1Input = document.getElementById('theta1');
+        const theta2Input = document.getElementById('theta2');
+        const theta3Input = document.getElementById('theta3');
+        const L1Input = document.getElementById('L1');
+        const L2Input = document.getElementById('L2');
+        const L3Input = document.getElementById('L3');
+        const HInput = document.getElementById('H');
+        const WbodyInput = document.getElementById('W_body');
+
+        // Add event listeners
+        theta1Input.addEventListener('input', updateAll);
+        theta2Input.addEventListener('input', updateAll);
+        theta3Input.addEventListener('input', updateAll);
+        L1Input.addEventListener('input', updateAll);
+        L2Input.addEventListener('input', updateAll);
+        L3Input.addEventListener('input', updateAll);
+        HInput.addEventListener('input', updateAll);
+        WbodyInput.addEventListener('input', updateAll);
+
+        // Preset positions
+        function setPreset(preset) {
+            clearTrajectory();
+            switch(preset) {
+                case 'home':
+                    theta1Input.value = 0;
+                    theta2Input.value = 0;
+                    theta3Input.value = 0;
+                    break;
+                case 'stand':
+                    theta1Input.value = 0;
+                    theta2Input.value = 45;
+                    theta3Input.value = -90;
+                    break;
+                case 'high':
+                    theta1Input.value = 0;
+                    theta2Input.value = 60;
+                    theta3Input.value = -120;
+                    break;
+                case 'low':
+                    theta1Input.value = 0;
+                    theta2Input.value = 30;
+                    theta3Input.value = -60;
+                    break;
+                case 'forward':
+                    theta1Input.value = 0;
+                    theta2Input.value = 30;
+                    theta3Input.value = -75;
+                    break;
+                case 'backward':
+                    theta1Input.value = 0;
+                    theta2Input.value = 60;
+                    theta3Input.value = -105;
+                    break;
+            }
+            updateAll();
+        }
+
+        // Update all
+        function updateAll() {
+            document.getElementById('theta1-value').textContent = theta1Input.value + '°';
+            document.getElementById('theta2-value').textContent = theta2Input.value + '°';
+            document.getElementById('theta3-value').textContent = theta3Input.value + '°';
+            calculate();
+        }
+
+        // Calculate FK
+        function calculate() {
+            try {
+                const L1 = parseFloat(L1Input.value);
+                const L2 = parseFloat(L2Input.value);
+                const L3 = parseFloat(L3Input.value);
+                const theta1 = parseFloat(theta1Input.value);
+                const theta2 = parseFloat(theta2Input.value);
+                const theta3 = parseFloat(theta3Input.value);
+                const H = parseFloat(HInput.value);
+                const W_body = parseFloat(WbodyInput.value);
+
+                // Update root joint display
+                document.getElementById('root-x').textContent = (H/2).toFixed(1);
+                document.getElementById('root-y').textContent = (W_body/2).toFixed(1);
+
+                const formulaX = document.getElementById('formula-x').value;
+                const formulaY = document.getElementById('formula-y').value;
+                const formulaZ = document.getElementById('formula-z').value;
+
+                const cos = Math.cos;
+                const sin = Math.sin;
+                const sqrt = Math.sqrt;
+                const pow = Math.pow;
+                const abs = Math.abs;
+
+                // Calculate relative position (from root joint)
+                const x_rel = eval(formulaX);
+                const y_rel = eval(formulaY);
+                const z_rel = eval(formulaZ);
+
+                // Check coordinate mode
+                const coordMode = document.querySelector('input[name="coord-mode"]:checked').value;
+
+                let x_display, y_display, z_display;
+                if (coordMode === 'absolute') {
+                    // Absolute position (from body center)
+                    x_display = x_rel + H/2;
+                    y_display = y_rel + W_body/2;
+                    z_display = z_rel + 0;
+                } else {
+                    // Relative position (from root joint)
+                    x_display = x_rel;
+                    y_display = y_rel;
+                    z_display = z_rel;
+                }
+
+                const r = sqrt(x_rel*x_rel + y_rel*y_rel);
+                const reach = sqrt(x_rel*x_rel + y_rel*y_rel + z_rel*z_rel);
+
+                document.getElementById('result-x').textContent = x_display.toFixed(2);
+                document.getElementById('result-y').textContent = y_display.toFixed(2);
+                document.getElementById('result-z').textContent = z_display.toFixed(2);
+                document.getElementById('result-r').textContent = r.toFixed(2);
+                document.getElementById('result-reach').textContent = reach.toFixed(2);
+                document.getElementById('result-height').textContent = abs(z_rel).toFixed(2);
+
+                document.getElementById('error-message').style.display = 'none';
+
+                // Update body mesh if dimensions changed
+                updateBodyMesh();
+
+                // Update 3D visualization (always use relative for calculation)
+                updateLeg3D(L1, L2, L3, theta1, theta2, theta3, x_rel, y_rel, z_rel);
+
+            } catch (error) {
+                const errorMsg = document.getElementById('error-message');
+                errorMsg.textContent = '❌ Error: ' + error.message;
+                errorMsg.style.display = 'block';
+            }
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            initThreeJS();
+            updateAll();
+        });
+    </script>
+</body>
+</html>

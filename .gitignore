@@ -1,0 +1,114 @@
+# Arduino build files
+*.hex
+*.elf
+*.map
+*.lst
+*.o
+*.a
+*.d
+build/
+.build/
+
+# Arduino IDE
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# ROS
+devel/
+logs/
+build/
+bin/
+lib/
+msg_gen/
+srv_gen/
+msg/*Action.msg
+msg/*ActionFeedback.msg
+msg/*ActionGoal.msg
+msg/*ActionResult.msg
+msg/*Feedback.msg
+msg/*Goal.msg
+msg/*Result.msg
+msg/_*.py
+
+# Log files
+*.log
+log/
+logs/
+
+# Configuration overrides (keep templates)
+config/**/local_*.json
+config/**/local_*.yaml
+config/**/*.local.*
+
+# Calibration data (keep templates)
+calibration_data/*.dat
+calibration_data/*.cal
+
+# Test outputs
+test_results/
+coverage/
+.coverage
+htmlcov/
+
+# Temporary files
+*.tmp
+*.bak
+*.backup
+*_backup
+
+# OS files
+Thumbs.db
+Desktop.ini
+.Spotlight-V100
+.Trashes
+
+# Media (large files - use Git LFS or external storage)
+media/videos/*.mp4
+media/videos/*.avi
+media/videos/*.mov
+media/3d_models/*.stl
+
+# Compiled libraries
+*.dll
+*.so
+*.dylib
+
+# Documentation build
+docs/_build/
+docs/_static/
+docs/_templates/
+
+# Simulation data
+simulation/data/*.bag
+simulation/data/*.csv
+
+# Keep directory structure
+!.gitkeep

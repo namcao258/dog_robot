@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quadruped Robot - Full 4 Legs FK</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 30px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .panel {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+            margin-bottom: 15px;
+        }
+
+        .panel h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 8px;
+        }
+
+        .param-group {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .param-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .param-item label {
+            font-size: 0.85em;
+            margin-bottom: 5px;
+            color: #666;
+            font-weight: bold;
+        }
+
+        .param-item input[type="number"] {
+            padding: 6px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 0.9em;
+            text-align: center;
+        }
+
+        .leg-selector {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .leg-btn {
+            padding: 10px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .leg-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .leg-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+            font-size: 0.95em;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            height: 6px;
+            border-radius: 5px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+        }
+
+        .value-display {
+            min-width: 60px;
+            text-align: right;
+            font-weight: bold;
+            font-size: 1em;
+            color: #667eea;
+            background: white;
+            padding: 5px 8px;
+            border-radius: 5px;
+            border: 2px solid #667eea;
+        }
+
+        #canvas3d {
+            width: 100%;
+            height: 700px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            border: 2px solid #ddd;
+        }
+
+        .info-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+            font-size: 0.85em;
+            color: #856404;
+        }
+
+        .view-controls {
+            background: #e3f2fd;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .view-controls h4 {
+            color: #1976D2;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+
+        .view-controls p {
+            color: #555;
+            font-size: 0.85em;
+            margin: 3px 0;
+        }
+
+        .preset-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .preset-btn {
+            padding: 8px;
+            font-size: 0.85em;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .preset-btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 Quadruped Robot - Full 4 Legs FK</h1>
+        <p class="subtitle">Forward Kinematics Visualization for All Legs</p>
+
+        <div class="main-grid">
+            <!-- Left Panel: Controls -->
+            <div>
+                <div class="panel">
+                    <h2>📏 Body Dimensions (mm)</h2>
+                    <div class="param-group">
+                        <div class="param-item">
+                            <label>H (Length)</label>
+                            <input type="number" id="H" value="180" min="0" max="300" step="1">
+                        </div>
+                        <div class="param-item">
+                            <label>W (Width)</label>
+                            <input type="number" id="W_body" value="80" min="0" max="200" step="1">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h2>⚙️ Link Lengths (mm)</h2>
+                    <div class="param-group">
+                        <div class="param-item">
+                            <label>L1 (Basal)</label>
+                            <input type="number" id="L1" value="60" min="0" max="200" step="1">
+                        </div>
+                        <div class="param-item">
+                            <label>L2 (Thigh)</label>
+                            <input type="number" id="L2" value="105" min="0" max="200" step="1">
+                        </div>
+                        <div class="param-item">
+                            <label>L3 (Calf)</label>
+                            <input type="number" id="L3" value="132" min="0" max="200" step="1">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h2>🦿 Select Leg</h2>
+                    <div class="leg-selector">
+                        <button class="leg-btn active" onclick="selectLeg('LF')">LF</button>
+                        <button class="leg-btn" onclick="selectLeg('RF')">RF</button>
+                        <button class="leg-btn" onclick="selectLeg('LR')">LR</button>
+                        <button class="leg-btn" onclick="selectLeg('RR')">RR</button>
+                    </div>
+                    <div class="info-box">
+                        <strong>Selected:</strong> <span id="selected-leg">Left Front (LF)</span>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h2>🎛️ Joint Angles - <span id="leg-label">LF</span></h2>
+
+                    <div class="control-group">
+                        <label>θ1 (Hip)</label>
+                        <div class="slider-container">
+                            <input type="range" id="theta1" min="-45" max="45" value="0" step="1">
+                            <span class="value-display" id="theta1-value">0°</span>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label>θ2 (Knee)</label>
+                        <div class="slider-container">
+                            <input type="range" id="theta2" min="-90" max="90" value="45" step="1">
+                            <span class="value-display" id="theta2-value">45°</span>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label>θ3 (Ankle)</label>
+                        <div class="slider-container">
+                            <input type="range" id="theta3" min="-135" max="0" value="-90" step="1">
+                            <span class="value-display" id="theta3-value">-90°</span>
+                        </div>
+                    </div>
+
+                    <div class="preset-buttons">
+                        <button class="preset-btn" onclick="setPreset('home')">🏠 Home</button>
+                        <button class="preset-btn" onclick="setPreset('stand')">🧍 Stand</button>
+                        <button class="preset-btn" onclick="setPreset('high')">⬆️ High</button>
+                        <button class="preset-btn" onclick="setPreset('low')">⬇️ Low</button>
+                    </div>
+                </div>
+
+                <div class="view-controls">
+                    <h4>🎮 3D View Controls:</h4>
+                    <p>🖱️ <strong>Left:</strong> Rotate</p>
+                    <p>🖱️ <strong>Right:</strong> Pan</p>
+                    <p>🔄 <strong>Wheel:</strong> Zoom</p>
+                </div>
+            </div>
+
+            <!-- Right Panel: 3D Visualization -->
+            <div>
+                <div class="panel" style="padding: 15px;">
+                    <h2>🎨 3D Visualization - Full Quadruped</h2>
+                    <div id="canvas3d"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Three.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <script>
+        // Three.js Setup
+        let scene, camera, renderer, controls;
+        let bodyMesh;
+        let legs = {
+            LF: { links: [], joints: [] },
+            RF: { links: [], joints: [] },
+            LR: { links: [], joints: [] },
+            RR: { links: [], joints: [] }
+        };
+        let currentLeg = 'LF';
+
+        // Angles for each leg
+        let legAngles = {
+            LF: { theta1: 0, theta2: 45, theta3: -90 },
+            RF: { theta1: 0, theta2: 45, theta3: -90 },
+            LR: { theta1: 0, theta2: 45, theta3: -90 },
+            RR: { theta1: 0, theta2: 45, theta3: -90 }
+        };
+
+        const PI = Math.PI;
+
+        // Initialize Three.js
+        function initThreeJS() {
+            const container = document.getElementById('canvas3d');
+
+            // Scene
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x1a1a2e);
+
+            // Camera
+            camera = new THREE.PerspectiveCamera(
+                50,
+                container.clientWidth / container.clientHeight,
+                1,
+                2000
+            );
+            camera.position.set(400, 300, 500);
+            camera.lookAt(0, 0, 0);
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.shadowMap.enabled = true;
+            container.appendChild(renderer.domElement);
+
+            // Controls
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+
+            // Lights
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(200, 300, 200);
+            directionalLight.castShadow = true;
+            scene.add(directionalLight);
+
+            const pointLight = new THREE.PointLight(0x667eea, 0.5);
+            pointLight.position.set(-200, 200, 200);
+            scene.add(pointLight);
+
+            // Grid
+            const gridHelper = new THREE.GridHelper(500, 20, 0x667eea, 0x444444);
+            gridHelper.rotation.x = Math.PI / 2;
+            scene.add(gridHelper);
+
+            // Axes
+            const axesHelper = new THREE.AxesHelper(150);
+            scene.add(axesHelper);
+
+            // Create body
+            updateBodyMesh();
+
+            // Create all legs
+            updateAllLegs();
+
+            // Handle window resize
+            window.addEventListener('resize', onWindowResize);
+
+            // Animation loop
+            animate();
+        }
+
+        function updateBodyMesh() {
+            if (bodyMesh) scene.remove(bodyMesh);
+
+            const H = parseFloat(document.getElementById('H').value);
+            const W_body = parseFloat(document.getElementById('W_body').value);
+
+            const bodyGeom = new THREE.BoxGeometry(H, W_body, 40);
+            const bodyMat = new THREE.MeshPhongMaterial({
+                color: 0xcc0000,
+                transparent: true,
+                opacity: 0.7
+            });
+            bodyMesh = new THREE.Mesh(bodyGeom, bodyMat);
+            bodyMesh.position.set(0, 0, 0);
+            scene.add(bodyMesh);
+        }
+
+        function createCylinder(start, end, color, radius = 4) {
+            const direction = new THREE.Vector3().subVectors(end, start);
+            const length = direction.length();
+
+            if (length < 0.1) return null;
+
+            const orientation = new THREE.Matrix4();
+            orientation.lookAt(start, end, new THREE.Object3D().up);
+            orientation.multiply(new THREE.Matrix4().makeRotationX(Math.PI / 2));
+
+            const geometry = new THREE.CylinderGeometry(radius, radius, length, 16);
+            const material = new THREE.MeshPhongMaterial({ color: color });
+            const cylinder = new THREE.Mesh(geometry, material);
+
+            cylinder.applyMatrix4(orientation);
+            cylinder.position.copy(new THREE.Vector3().addVectors(start, direction.multiplyScalar(0.5)));
+
+            return cylinder;
+        }
+
+        function updateLeg(legName, L1, L2, L3, theta1, theta2, theta3) {
+            // Clear old leg
+            legs[legName].links.forEach(link => scene.remove(link));
+            legs[legName].joints.forEach(joint => scene.remove(joint));
+            legs[legName].links = [];
+            legs[legName].joints = [];
+
+            // Body dimensions
+            const H = parseFloat(document.getElementById('H').value);
+            const W_body = parseFloat(document.getElementById('W_body').value);
+
+            // Determine root position for each leg
+            let rootPos;
+            let signX = 1, signY = 1;
+            let isFront = true; // Front legs bend forward, rear legs bend backward
+
+            switch(legName) {
+                case 'LF':
+                    rootPos = new THREE.Vector3(H/2, W_body/2, 0);
+                    signX = 1; signY = 1; isFront = true;
+                    break;
+                case 'RF':
+                    rootPos = new THREE.Vector3(H/2, -W_body/2, 0);
+                    signX = 1; signY = -1; isFront = true;
+                    break;
+                case 'LR':
+                    rootPos = new THREE.Vector3(-H/2, W_body/2, 0);
+                    signX = -1; signY = 1; isFront = false;
+                    break;
+                case 'RR':
+                    rootPos = new THREE.Vector3(-H/2, -W_body/2, 0);
+                    signX = -1; signY = -1; isFront = false;
+                    break;
+            }
+
+            // Convert to radians
+            // For rear legs, negate theta2 and theta3 to mirror the knee bend
+            const t1 = theta1 * PI / 180;
+            const t2 = (isFront ? theta2 : -theta2) * PI / 180;
+            const t3 = (isFront ? theta3 : -theta3) * PI / 180;
+
+            // Calculate in local frame
+            let localHip = new THREE.Vector3(0, signY * L1, 0);
+            let localKnee = new THREE.Vector3(
+                signX * (-L2 * Math.sin(t2)),
+                signY * L1,
+                -L2 * Math.cos(t2)
+            );
+            let localEnd = new THREE.Vector3(
+                signX * (-L2 * Math.sin(t2) - L3 * Math.sin(t2 + t3)),
+                signY * L1,
+                -L2 * Math.cos(t2) - L3 * Math.cos(t2 + t3)
+            );
+
+            // Rotate around X-axis by theta1
+            function rotateAroundX(point, angle, signY) {
+                const y = point.y * Math.cos(angle) - point.z * Math.sin(angle);
+                const z = point.y * Math.sin(angle) + point.z * Math.cos(angle);
+                return new THREE.Vector3(point.x, y, z);
+            }
+
+            const pHip = rotateAroundX(localHip, signY * t1, signY).add(rootPos);
+            const pKnee = rotateAroundX(localKnee, signY * t1, signY).add(rootPos);
+            const pEnd = rotateAroundX(localEnd, signY * t1, signY).add(rootPos);
+
+            // Create joints
+            const jointGeom = new THREE.SphereGeometry(5, 16, 16);
+
+            const jointRoot = new THREE.Mesh(jointGeom, new THREE.MeshPhongMaterial({ color: 0x888888 }));
+            jointRoot.position.copy(rootPos);
+            scene.add(jointRoot);
+            legs[legName].joints.push(jointRoot);
+
+            const jointHip = new THREE.Mesh(jointGeom, new THREE.MeshPhongMaterial({ color: 0xFFEB3B }));
+            jointHip.position.copy(pHip);
+            scene.add(jointHip);
+            legs[legName].joints.push(jointHip);
+
+            const jointKnee = new THREE.Mesh(jointGeom, new THREE.MeshPhongMaterial({ color: 0x4CAF50 }));
+            jointKnee.position.copy(pKnee);
+            scene.add(jointKnee);
+            legs[legName].joints.push(jointKnee);
+
+            const endEffector = new THREE.Mesh(
+                new THREE.SphereGeometry(7, 16, 16),
+                new THREE.MeshPhongMaterial({ color: 0xf44336 })
+            );
+            endEffector.position.copy(pEnd);
+            scene.add(endEffector);
+            legs[legName].joints.push(endEffector);
+
+            // Create links
+            const linkBasal = createCylinder(rootPos, pHip, 0x888888, 4);
+            const linkThigh = createCylinder(pHip, pKnee, 0xFFEB3B, 5);
+            const linkCalf = createCylinder(pKnee, pEnd, 0x4CAF50, 5);
+
+            if (linkBasal) { scene.add(linkBasal); legs[legName].links.push(linkBasal); }
+            if (linkThigh) { scene.add(linkThigh); legs[legName].links.push(linkThigh); }
+            if (linkCalf) { scene.add(linkCalf); legs[legName].links.push(linkCalf); }
+        }
+
+        function updateAllLegs() {
+            const L1 = parseFloat(document.getElementById('L1').value);
+            const L2 = parseFloat(document.getElementById('L2').value);
+            const L3 = parseFloat(document.getElementById('L3').value);
+
+            Object.keys(legAngles).forEach(legName => {
+                const angles = legAngles[legName];
+                updateLeg(legName, L1, L2, L3, angles.theta1, angles.theta2, angles.theta3);
+            });
+        }
+
+        function onWindowResize() {
+            const container = document.getElementById('canvas3d');
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // UI Controls
+        const theta1Input = document.getElementById('theta1');
+        const theta2Input = document.getElementById('theta2');
+        const theta3Input = document.getElementById('theta3');
+        const L1Input = document.getElementById('L1');
+        const L2Input = document.getElementById('L2');
+        const L3Input = document.getElementById('L3');
+        const HInput = document.getElementById('H');
+        const WbodyInput = document.getElementById('W_body');
+
+        function updateAngleDisplays() {
+            document.getElementById('theta1-value').textContent = theta1Input.value + '°';
+            document.getElementById('theta2-value').textContent = theta2Input.value + '°';
+            document.getElementById('theta3-value').textContent = theta3Input.value + '°';
+        }
+
+        function updateCurrentLegAngles() {
+            legAngles[currentLeg].theta1 = parseFloat(theta1Input.value);
+            legAngles[currentLeg].theta2 = parseFloat(theta2Input.value);
+            legAngles[currentLeg].theta3 = parseFloat(theta3Input.value);
+            updateAngleDisplays();
+            updateAllLegs();
+        }
+
+        theta1Input.addEventListener('input', updateCurrentLegAngles);
+        theta2Input.addEventListener('input', updateCurrentLegAngles);
+        theta3Input.addEventListener('input', updateCurrentLegAngles);
+
+        L1Input.addEventListener('input', () => { updateBodyMesh(); updateAllLegs(); });
+        L2Input.addEventListener('input', () => { updateBodyMesh(); updateAllLegs(); });
+        L3Input.addEventListener('input', () => { updateBodyMesh(); updateAllLegs(); });
+        HInput.addEventListener('input', () => { updateBodyMesh(); updateAllLegs(); });
+        WbodyInput.addEventListener('input', () => { updateBodyMesh(); updateAllLegs(); });
+
+        function selectLeg(legName) {
+            // Save current leg's angles
+            legAngles[currentLeg].theta1 = parseFloat(theta1Input.value);
+            legAngles[currentLeg].theta2 = parseFloat(theta2Input.value);
+            legAngles[currentLeg].theta3 = parseFloat(theta3Input.value);
+
+            // Switch to new leg
+            currentLeg = legName;
+
+            // Load new leg's angles
+            theta1Input.value = legAngles[legName].theta1;
+            theta2Input.value = legAngles[legName].theta2;
+            theta3Input.value = legAngles[legName].theta3;
+
+            updateAngleDisplays();
+
+            // Update UI
+            document.querySelectorAll('.leg-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('leg-label').textContent = legName;
+
+            const legNames = {
+                LF: 'Left Front (LF)',
+                RF: 'Right Front (RF)',
+                LR: 'Left Rear (LR)',
+                RR: 'Right Rear (RR)'
+            };
+            document.getElementById('selected-leg').textContent = legNames[legName];
+        }
+
+        function setPreset(preset) {
+            switch(preset) {
+                case 'home':
+                    theta1Input.value = 0;
+                    theta2Input.value = 0;
+                    theta3Input.value = 0;
+                    break;
+                case 'stand':
+                    theta1Input.value = 0;
+                    theta2Input.value = 45;
+                    theta3Input.value = -90;
+                    break;
+                case 'high':
+                    theta1Input.value = 0;
+                    theta2Input.value = 60;
+                    theta3Input.value = -120;
+                    break;
+                case 'low':
+                    theta1Input.value = 0;
+                    theta2Input.value = 30;
+                    theta3Input.value = -60;
+                    break;
+            }
+            updateCurrentLegAngles();
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            initThreeJS();
+            updateAngleDisplays();
+        });
+    </script>
+</body>
+</html>
